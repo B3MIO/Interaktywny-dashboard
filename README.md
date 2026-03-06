@@ -11,17 +11,17 @@ Projekt rozwiązuje problem manualnej, czasochłonnej obsługi danych, minimaliz
 * **Język programowania:** VBA (Visual Basic for Applications)
 * **Główne mechanizmy:**
   * Automatyzacja procesów ETL (Extract, Transform, Load) dla surowych danych wejściowych.
-  * Walidacja integralności danych z wykorzystaniem [wpisz np. wyrażeń regularnych / dedykowanych funkcji logicznych].
+  * Walidacja integralności danych z wykorzystaniem dedykowanych funkcji logicznych.
   * Generowanie zestandaryzowanych raportów końcowych.
 
 ## ⚙️ Funkcjonalności
-* **Import i czyszczenie danych:** Skrypty automatycznie pobierają surowe dane z systemów [np. klasy ERP] i usuwają zduplikowane lub błędne rekordy.
+* **Import i czyszczenie danych:** Skrypty automatycznie pobierają surowe dane z systemów np. klasy ERP i usuwają zduplikowane lub błędne rekordy.
 * **Silnik analityczny:** Dekompozycja i mapowanie danych zgodnie z zapisaną logiką biznesową.
 * **Moduł raportowy:** Dynamiczne generowanie widoków podsumowujących kluczowe metryki procesu.
 
 ## 🚀 Wyniki wdrożenia i KPI
 Testy rozwiązania przeprowadzone w ramach pracy inżynierskiej wykazały:
-* Skrócenie czasu potrzebnego na weryfikację i przetworzenie pakietu danych o **[99]%** (z [4] godzin do [1] minuty).
+* Skrócenie czasu potrzebnego na weryfikację i przetworzenie pakietu danych o **99%** (z 4 godzin do 1 minuty).
 * Zwiększenie spójności i bezbłędności generowanej dokumentacji inżynieryjnej.
 * Opracowanie skalowalnej struktury, która pozwala na łatwą adaptację narzędzia do nowych linii lub procesów.
 
