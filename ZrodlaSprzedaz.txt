@@ -1,0 +1,61 @@
+let
+    Źródło = Folder.Files(Param_Path_Zrodla),
+
+    FiltrowanePliki = Table.SelectRows(Źródło, each 
+        (Text.Lower([Extension]) = .csv) or 
+        (Text.Lower([Extension]) = .xlsx) or 
+        (Text.Lower([Extension]) = .xls)
+    ),
+
+    ImportDanych = Table.AddColumn(FiltrowanePliki, DanePliku, each 
+        if Text.Lower([Extension]) = .csv then
+
+            Table.PromoteHeaders(Csv.Document([Content],[Delimiter=,, Columns=16, Encoding=65001, QuoteStyle=QuoteStyle.None]), [PromoteAllScalars=true])
+        else
+            let
+                Skoroszyt = Excel.Workbook([Content]),
+                Arkusz1 = Skoroszyt{0}[Data],
+                Naglowki = Table.PromoteHeaders(Arkusz1, [PromoteAllScalars=true])
+            in
+                Naglowki
+    ),
+
+    UsunInne = Table.SelectColumns(ImportDanych,{DanePliku}),
+    Rozwin = Table.ExpandTableColumn(UsunInne, DanePliku, 
+        {Date, SKU, Style, Qty, Amount, Status, Sales Channel, B2B}, 
+        {Date, SKU, Style, Qty, Amount, Status, Sales Channel, B2B}
+    ),
+    ZmienTypy = Table.TransformColumnTypes(Rozwin,{
+        {Amount, type number},
+        {Qty, Int64.Type},
+        {Date, type date}
+    }, en-US),
+    ZmianaNazw = Table.RenameColumns(ZmienTypy,{
+        {Date, Data},
+        {Amount, Przychód},
+        {Qty, Ilość},
+        {SKU, Kod_Produktu},
+        {Style, Kategoria},
+        {Sales Channel, Kanal_sprzedazy},
+        {Status, Status_Oryginalny}
+    }),
+    #Usunięto błędy = Table.RemoveRowsWithErrors(ZmianaNazw, {Data}),
+    DodajStatusPL = Table.AddColumn(#Usunięto błędy, Status_zamowienia, each 
+        if [Status_Oryginalny] = null then W toku
+        else if Text.Contains([Status_Oryginalny], Shipped) then Zrealizowane
+        else if Text.Contains([Status_Oryginalny], Cancelled) then Anulowane
+        else W toku),
+    UzupelnijZera = Table.ReplaceValue(DodajStatusPL, null, 0, Replacer.ReplaceValue, {Przychód, Ilość}),
+
+    DodajKoszt = Table.AddColumn(UzupelnijZera, Koszt_zakupu, each Number.Round([Przychód]  0.7, 2), type number),
+
+    DodajMarze = Table.AddColumn(DodajKoszt, Marża, each [Przychód] - [Koszt_zakupu], type number),
+
+    DodajRok = Table.AddColumn(DodajMarze, Rok, each Date.Year([Data]), Int64.Type),
+    DodajMiesiac = Table.AddColumn(DodajRok, Miesiąc, each Date.Month([Data]), Int64.Type),
+    DodajSegment = Table.AddColumn(DodajMiesiac, Segment_klienta, each if Text.From([B2B]) = True or [B2B] = true then Premium else Standard),
+    DodajTyp = Table.AddColumn(DodajSegment, Typ_klienta, each if Text.From([B2B]) = True or [B2B] = true then B2B else B2C),
+
+    Wynik = Table.SelectColumns(DodajTyp,{Data, Rok, Miesiąc, Kod_Produktu, Kategoria, Ilość, Przychód, Koszt_zakupu, Marża, Status_zamowienia, Kanal_sprzedazy, Segment_klienta, Typ_klienta})
+in
+    Wynik
